@@ -1,7 +1,7 @@
 <?php
 
 return [
-
+    'admin_reset_secret' => env('ADMIN_RESET_SECRET'),
     /*
     |--------------------------------------------------------------------------
     | Application Name
