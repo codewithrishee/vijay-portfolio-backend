@@ -1,9 +1,8 @@
+```php
 <?php
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Hash;
-use App\Models\User;
 use App\Http\Controllers\Api\ProjectController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ContactMessageController;
@@ -19,38 +18,6 @@ use App\Http\Controllers\Api\HeroSectionController;
 | Public API Routes
 |--------------------------------------------------------------------------
 */
-
-// TEMPORARY ADMIN PASSWORD RESET — REMOVE AFTER SUCCESSFUL USE.
-Route::post('/admin-reset-once', function (Request $request) {
-    $secret = (string) config('app.admin_reset_secret');
-    $provided = (string) $request->header('X-Admin-Reset-Secret');
-
-    if ($secret === '' || !hash_equals($secret, $provided)) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Unauthorized.',
-        ], 401);
-    }
-
-    $data = $request->validate([
-        'email' => ['required', 'email'],
-        'password' => ['required', 'string', 'min:12'],
-    ]);
-
-    $user = User::updateOrCreate(
-        ['email' => $data['email']],
-        [
-            'name' => 'Vijay Admin',
-            'password' => Hash::make($data['password']),
-        ]
-    );
-
-    return response()->json([
-        'success' => true,
-        'message' => 'Admin credentials updated.',
-        'email' => $user->email,
-    ]);
-})->middleware('throttle:3,1');
 
 // Login: limit repeated login attempts.
 Route::post('/login', [AuthController::class, 'login'])
@@ -142,3 +109,4 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('/skills', SkillController::class)
         ->except(['index']);
 });
+```
