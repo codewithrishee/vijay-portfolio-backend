@@ -11,6 +11,8 @@ class Skill extends Model
     'category',
     'description',
     'icon',
+    'icon_type',
+    'image',
     'color',
     'is_active',
     'sort_order',
