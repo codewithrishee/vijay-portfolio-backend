@@ -63,6 +63,8 @@ Route::middleware('auth:sanctum')->group(function () {
         return $request->user();
     });
 
+    Route::get('/contact-notifications', [ContactMessageController::class, 'notifications']);
+
     // Projects CRUD
     Route::post('/projects', [ProjectController::class, 'store']);
     Route::put('/projects/{id}', [ProjectController::class, 'update']);
