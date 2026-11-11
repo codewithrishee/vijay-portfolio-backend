@@ -86,63 +86,57 @@ class AuthController extends Controller
         ]);
     }
 
-    /**
-     * Update profile details and profile photo.
-     */
-    public function updateProfile(Request $request)
-    {
-        $user = $request->user();
+    
+public function updateProfile(Request $request)
+{
+    $user = $request->user();
 
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => [
-                'required',
-                'email',
-                'max:255',
-                Rule::unique('users', 'email')->ignore($user->id),
-            ],
-            'profile_photo' => [
-                'nullable',
-                'image',
-                'mimes:jpg,jpeg,png,webp',
-                'max:2048',
-            ],
-        ]);
+    $validated = $request->validate([
+        'name' => ['required', 'string', 'max:255'],
+        'email' => [
+            'required',
+            'email',
+            'max:255',
+            Rule::unique('users', 'email')->ignore($user->id),
+        ],
+        'profile_photo' => [
+            'nullable',
+            'image',
+            'mimes:jpg,jpeg,png,webp',
+            'max:2048',
+        ],
+    ]);
 
-        $oldPhoto = $user->profile_photo;
-        $newPhoto = null;
-
+    try {
         if ($request->hasFile('profile_photo')) {
-            $newPhoto = $request->file('profile_photo')
-                ->store('admin-profiles', 'public');
+            $result = cloudinary()->uploadApi()->upload(
+                $request->file('profile_photo')->getRealPath(),
+                ['folder' => 'portfolio/admin-profiles']
+            );
 
-            if (!$newPhoto) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Unable to upload profile photo.',
-                ], 500);
-            }
+            $user->profile_photo = $result['secure_url'];
         }
 
         $user->name = $validated['name'];
         $user->email = $validated['email'];
-
-        if ($newPhoto) {
-            $user->profile_photo = $newPhoto;
-        }
-
         $user->save();
-
-        if ($newPhoto && $oldPhoto) {
-            Storage::disk('public')->delete($oldPhoto);
-        }
 
         return response()->json([
             'success' => true,
             'message' => 'Profile updated successfully.',
             'user' => $this->userData($user),
         ]);
+
+    } catch (\Throwable $e) {
+        report($e);
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Profile update or photo upload failed.',
+        ], 500);
     }
+}
+
 
     /**
      * Change account password.
