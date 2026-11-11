@@ -5,8 +5,6 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Project;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Validation\ValidationException;
 
 class ProjectController extends Controller
 {
@@ -42,8 +40,12 @@ class ProjectController extends Controller
         ]);
 
         if ($request->hasFile('image')) {
-            $validated['image'] = $request->file('image')
-                ->store('projects', 'public');
+            $upload = cloudinary()->uploadApi()->upload(
+                $request->file('image')->getRealPath(),
+                ['folder' => 'portfolio/projects']
+            );
+
+            $validated['image'] = $upload['secure_url'];
         }
 
         $project = Project::create($validated);
@@ -86,17 +88,12 @@ class ProjectController extends Controller
         ]);
 
         if ($request->hasFile('image')) {
-            $newImage = $request->file('image')
-                ->store('projects', 'public');
+            $upload = cloudinary()->uploadApi()->upload(
+                $request->file('image')->getRealPath(),
+                ['folder' => 'portfolio/projects']
+            );
 
-            if (
-                $project->image &&
-                Storage::disk('public')->exists($project->image)
-            ) {
-                Storage::disk('public')->delete($project->image);
-            }
-
-            $validated['image'] = $newImage;
+            $validated['image'] = $upload['secure_url'];
         }
 
         $project->update($validated);
@@ -111,13 +108,6 @@ class ProjectController extends Controller
     public function destroy(string $id)
     {
         $project = Project::findOrFail($id);
-
-        if (
-            $project->image &&
-            Storage::disk('public')->exists($project->image)
-        ) {
-            Storage::disk('public')->delete($project->image);
-        }
 
         $project->delete();
 

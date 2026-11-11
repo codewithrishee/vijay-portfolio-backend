@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Skill;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 
 class SkillController extends Controller
 {
@@ -35,8 +34,12 @@ class SkillController extends Controller
         ]);
 
         if ($request->hasFile('image')) {
-            $validated['image'] = $request->file('image')
-                ->store('skills', 'public');
+            $upload = cloudinary()->uploadApi()->upload(
+                $request->file('image')->getRealPath(),
+                ['folder' => 'portfolio/skills']
+            );
+
+            $validated['image'] = $upload['secure_url'];
         }
 
         $skill = Skill::create($validated);
@@ -73,20 +76,15 @@ class SkillController extends Controller
         ]);
 
         if ($request->hasFile('image')) {
-            $newImage = $request->file('image')->store('skills', 'public');
+            $upload = cloudinary()->uploadApi()->upload(
+                $request->file('image')->getRealPath(),
+                ['folder' => 'portfolio/skills']
+            );
 
-            if ($skill->image) {
-                Storage::disk('public')->delete($skill->image);
-            }
-
-            $validated['image'] = $newImage;
+            $validated['image'] = $upload['secure_url'];
         }
 
         if (($validated['icon_type'] ?? $skill->icon_type) === 'bootstrap') {
-            if ($skill->image) {
-                Storage::disk('public')->delete($skill->image);
-            }
-
             $validated['image'] = null;
         }
 
@@ -102,10 +100,6 @@ class SkillController extends Controller
     // Admin: Delete skill
     public function destroy(Skill $skill)
     {
-        if ($skill->image) {
-            Storage::disk('public')->delete($skill->image);
-        }
-
         $skill->delete();
 
         return response()->json([

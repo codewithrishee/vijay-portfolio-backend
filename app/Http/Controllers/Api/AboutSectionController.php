@@ -27,7 +27,7 @@ class AboutSectionController extends Controller
         $data = $request->validate([
             'name' => 'required|string|max:255',
             'location' => 'required|string|max:255',
-            'image' => 'nullable|string|max:2048',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
             'education' => 'required|string|max:255',
             'education_description' => 'required|string|max:255',
             'profile_technologies' => 'required|string|max:255',
@@ -41,6 +41,15 @@ class AboutSectionController extends Controller
             'technologies' => 'nullable|string|max:255',
             'is_active' => 'sometimes|boolean',
         ]);
+
+        if ($request->hasFile('image')) {
+            $upload = cloudinary()->uploadApi()->upload(
+                $request->file('image')->getRealPath(),
+                ['folder' => 'portfolio/about']
+            );
+
+            $data['image'] = $upload['secure_url'];
+        }
 
         $about = AboutSection::create($data);
 
@@ -57,7 +66,7 @@ class AboutSectionController extends Controller
         $data = $request->validate([
             'name' => 'sometimes|required|string|max:255',
             'location' => 'sometimes|required|string|max:255',
-            'image' => 'nullable|string|max:2048',
+            'image' => 'sometimes|nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
             'education' => 'sometimes|required|string|max:255',
             'education_description' => 'sometimes|required|string|max:255',
             'profile_technologies' => 'sometimes|required|string|max:255',
@@ -72,9 +81,18 @@ class AboutSectionController extends Controller
             'is_active' => 'sometimes|boolean',
         ]);
 
+        if ($request->hasFile('image')) {
+            $upload = cloudinary()->uploadApi()->upload(
+                $request->file('image')->getRealPath(),
+                ['folder' => 'portfolio/about']
+            );
+
+            $data['image'] = $upload['secure_url'];
+        }
+
         $aboutSection->update($data);
 
-        return response()->json($aboutSection);
+        return response()->json($aboutSection->fresh());
     }
 
     public function destroy(AboutSection $aboutSection)
