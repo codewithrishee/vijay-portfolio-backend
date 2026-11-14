@@ -22,6 +22,8 @@ class HeroSection extends Model
         'secondary_button_link',
         'github_url',
         'linkedin_url',
+        'instagram_url',
+        'facebook_url',
         'experience_value',
         'experience_label',
         'technology_count',
