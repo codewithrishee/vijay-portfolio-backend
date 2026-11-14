@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\MarqueeItemController;
 use App\Http\Controllers\Api\AboutSectionController;
 use App\Http\Controllers\Api\HeroSectionController;
 use App\Http\Controllers\Api\ResumeController;
+use App\Http\Controllers\Api\PreloaderSettingController;
 
 /*
 |--------------------------------------------------------------------------
@@ -36,6 +37,9 @@ Route::get('/resume/download', [ResumeController::class, 'download']);
 
 // Public contact form
 Route::post('/contact', [ContactMessageController::class, 'store']);
+
+// Public
+Route::get('/preloader', [PreloaderSettingController::class, 'index']);
 
 /*
 |--------------------------------------------------------------------------
@@ -102,4 +106,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // Skills CRUD
     Route::apiResource('/skills', SkillController::class)
         ->except(['index']);
+
+        Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/preloader-admin', [PreloaderSettingController::class, 'adminIndex']);
+    Route::post('/preloader-settings', [PreloaderSettingController::class, 'update']);
+});
 });
